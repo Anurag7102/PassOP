@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useRef } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Manager = () => {
     const ref = useRef()
-    const[form,setform] = useState({site:"", username: "", pasword: ""})
+    const passwordRef = useRef()
+    const[form,setform] = useState({site:"", username: "", password: ""})
     const [passwordArray, setpasswordArray] = useState([])
 
     useEffect(() =>{
@@ -13,12 +16,28 @@ const Manager = () => {
       }
     }, [])
 
+    const copyText = (text)=>{
+      toast('Copied to clipboard', {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+      navigator.clipboard.writeText(text)
+    }
+
     const showPassword = () =>{
         if(ref.current.src.includes("icons/eye.png")){
             ref.current.src = "icons/hidden.png"
-        }
-        else{
+            passwordRef.current.type="password"
+          }
+          else{
             ref.current.src = "icons/eye.png"
+            passwordRef.current.type="text"
         }
     }
 
@@ -31,14 +50,26 @@ const Manager = () => {
       setform({...form, [e.target.name]: e.target.value})
     }
 
-
   return (
     <>
-      <div class="absolute inset-0 -z-10 h-full w-full bg-green-100 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
-        <div class="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]"></div>
+<ToastContainer
+position="top-center"
+autoClose={2000}
+hideProgressBar={false}
+newestOnTop={false}
+closeOnClick
+rtl={false}
+pauseOnFocusLoss
+draggable
+pauseOnHover
+theme="light"
+/>
+
+      <div className="absolute inset-0 -z-10 h-full w-full bg-green-100 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
+        <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]"></div>
       </div>
 
-      <div className="myContainer">
+      <div className="myContainer pb-0">
         <h1 className="text-4xl text-center font-bold">
           <span className="text-green-500">&lt;</span>
           <span>Pass</span>
@@ -72,6 +103,7 @@ const Manager = () => {
             />
             <div className="relative">
               <input
+              ref={passwordRef}
                 placeholder="Enter Password"
                 value={form.password}
                 onChange={handleChange}
@@ -96,8 +128,39 @@ const Manager = () => {
               src="https://cdn.lordicon.com/jgnvfzqg.json"
               trigger="hover"
             ></lord-icon>
-            Add Password
+            Save
           </button>
+        </div>
+        <div className="passwords ">
+          <h2 className="font-bold text-2xl py-4">Your Passwords</h2>
+          {passwordArray.length===0 && <div>no passwords to show</div>}
+          {passwordArray.length!=0 && <table className="table-auto w-full rounded-md">
+  <thead className="bg-green-800 text-white">
+    <tr>
+      <th className="py-2">Site</th>
+      <th className="py-2">Username</th>
+      <th className="py-2">Password</th>
+      <th className="py-2">Actions</th>
+    </tr>
+  </thead>
+  <tbody className="bg-green-100">
+    {passwordArray.map((item, index) => {
+      return <tr key={index}>
+        
+      <td className="py-2 text-center "><a href={item.site} target="_blank">{item.site}</a><img onClick={()=>{copyText(item.site)}} className="w-7 pl-3 align-middle inline-block cursor-pointer" src="icons/copy.png" alt="" /></td>
+        
+      <td className="py-2 text-center "><span>{item.username}</span><img onClick={()=>{copyText(item.username)}} className="w-7 pl-3 align-middle inline-block cursor-pointer" src="icons/copy.png" alt="" /></td>
+
+        
+      <td className="py-2 text-center "><span>{item.password}</span><img onClick={()=>{copyText(item.password)}} className="w-7 pl-3 align-middle inline-block cursor-pointer" src="icons/copy.png" alt="" /></td>
+
+      <td className="flex justify-around"><img className="w-6 cursor-pointer" src="/icons/edit.gif" alt=""/> <img className="w-5 cursor-pointer" src="icons/delete.gif" alt="" /></td>
+        
+    </tr>
+    })}
+    
+  </tbody>
+</table>}
         </div>
       </div>
     </>

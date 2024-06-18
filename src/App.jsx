@@ -5,8 +5,8 @@ function App() {
 
   return (
     <>
-      <Navbar />
-      <Manager />
+      <Navbar/>
+      <Manager/>
     </>
   )
 }
