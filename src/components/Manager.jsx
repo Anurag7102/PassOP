@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useRef } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { v4 as uuidv4 } from 'uuid';
 
 const Manager = () => {
     const ref = useRef()
@@ -16,20 +17,6 @@ const Manager = () => {
       }
     }, [])
 
-    const copyText = (text)=>{
-      toast('Copied to clipboard', {
-        position: "top-right",
-        autoClose: 2000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        });
-      navigator.clipboard.writeText(text)
-    }
-
     const showPassword = () =>{
         if(ref.current.src.includes("icons/eye.png")){
             ref.current.src = "icons/hidden.png"
@@ -42,12 +29,68 @@ const Manager = () => {
     }
 
     const savePassword = () =>{
-      setpasswordArray([...passwordArray,form])
-      localStorage.setItem("passwords", JSON.stringify([...passwordArray,form]))
+      if(form.site.length>3 && form.username.length>3 && form.password.length>3){
+        setpasswordArray([...passwordArray,{...form, id:uuidv4()}])
+        localStorage.setItem("passwords", JSON.stringify([...passwordArray,{...form, id:uuidv4()}]))
+        setform({site:"", username: "", password: ""});
+        toast('Password saved!', {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+    else{
+
+      toast("Password not saved!")
+    }
+    }
+    
+    const deletePassword =(id)=>{
+      toast('Password Deleted!', {
+      position: "top-right",
+      autoClose: 2000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      });
+      console.log("Deleting password with id",id)
+      let c = confirm("Do you really want to delete the password?")
+      if(c){
+        setpasswordArray(passwordArray.filter(item=>item.id!==id))
+        localStorage.setItem("passwords", JSON.stringify(passwordArray.filter(item=>item.id!==id)))
+      }
+    }
+
+    const editPassword =(id)=>{
+      console.log("Editing password with id",id)
+      setform(passwordArray.filter(i=>i.id===id)[0])
+      setpasswordArray(passwordArray.filter(item=>item.id!==id))
     }
 
     const handleChange = (e) =>{
       setform({...form, [e.target.name]: e.target.value})
+    }
+
+    const copyText = (text)=>{
+      toast('Copied to clipboard', {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        });
+      navigator.clipboard.writeText(text)
     }
 
   return (
@@ -65,11 +108,11 @@ pauseOnHover
 theme="light"
 />
 
-      <div className="absolute inset-0 -z-10 h-full w-full bg-green-100 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
+      <div className="absolute inset-0 -z-10 h-full w-full bg-green-50 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:14px_24px]">
         <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-fuchsia-400 opacity-20 blur-[100px]"></div>
       </div>
 
-      <div className="myContainer pb-0">
+      <div className="md:p-2 md:myContainer pb-0">
         <h1 className="text-4xl text-center font-bold">
           <span className="text-green-500">&lt;</span>
           <span>Pass</span>
@@ -80,7 +123,7 @@ theme="light"
           your own password manager
         </p>
 
-        <div className="text-black gap-8 flex flex-col p-4 items-center">
+        <div className="text-black gap-8 flex flex-col p-4 items-center ">
           <input
             placeholder="Enter Website URL"
             value={form.site}
@@ -91,7 +134,7 @@ theme="light"
             id=""
           />
 
-          <div className="flex w-full justify-between gap-8">
+          <div className="flex flex-col w-full justify-between gap-8 md:flex-row">
             <input
               placeholder="Enter Username"
               value={form.username}
@@ -134,7 +177,7 @@ theme="light"
         <div className="passwords ">
           <h2 className="font-bold text-2xl py-4">Your Passwords</h2>
           {passwordArray.length===0 && <div>no passwords to show</div>}
-          {passwordArray.length!=0 && <table className="table-auto w-full rounded-md">
+          {passwordArray.length!=0 && <table className="table-auto w-full rounded-md overflow-hidden">
   <thead className="bg-green-800 text-white">
     <tr>
       <th className="py-2">Site</th>
@@ -154,7 +197,7 @@ theme="light"
         
       <td className="py-2 text-center "><span>{item.password}</span><img onClick={()=>{copyText(item.password)}} className="w-7 pl-3 align-middle inline-block cursor-pointer" src="icons/copy.png" alt="" /></td>
 
-      <td className="flex justify-around"><img className="w-6 cursor-pointer" src="/icons/edit.gif" alt=""/> <img className="w-5 cursor-pointer" src="icons/delete.gif" alt="" /></td>
+      <td className="flex justify-center items-center m-1"><img className="w-6 cursor-pointer mr-3" onClick={()=>{editPassword(item.id)}} src="/icons/edit.svg" alt=""/> <img className="w-5 cursor-pointer" onClick={()=>{deletePassword(item.id)}} src="icons/delete.svg" alt="" /></td>
         
     </tr>
     })}
